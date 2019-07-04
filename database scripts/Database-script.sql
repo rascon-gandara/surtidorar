@@ -4,6 +4,45 @@ COLLATE utf8_unicode_ci;
 
 USE db_surtido_r;
 
+CREATE TABLE IF NOT EXISTS migrations(
+	id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	migration VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+	batch INT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS password_resets(
+	email VARCHAR(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+	token VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+	created_at TIMESTAMP NULL DEFAULT NULL,
+	INDEX(email(100))
+);
+
+CREATE TABLE IF NOT EXISTS permissions(
+	id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(100) COLLATE utf8mb4_unicode_ci NOT NULL UNIQUE,
+	display_name VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+	description VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+	created_at TIMESTAMP NULL DEFAULT NULL,
+	updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS roles(
+	id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50) COLLATE utf8mb4_unicode_ci NOT NULL UNIQUE,
+	display_name VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+	description VARCHAR(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+	created_at TIMESTAMP NULL DEFAULT NULL,
+	updated_at TIMESTAMP NULL DEFAULT NULL
+);
+
+CREATE TABLE IF NOT EXISTS permission_role(
+	permission_id INT UNSIGNED NOT NULL,
+	role_id INT UNSIGNED NOT NULL,
+	PRIMARY KEY(permission_id, role_id),
+	FOREIGN KEY(permission_id) REFERENCES permissions(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY(role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS categories(
 	id_category INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 	category_name VARCHAR(100) UNIQUE NOT NULL COMMENT 'Must be UNIQUE to avoid confusion',
@@ -49,15 +88,27 @@ CREATE TABLE IF NOT EXISTS users(
 	lastname VARCHAR(100),
 	email VARCHAR(100) UNIQUE,
 	nickname VARCHAR(100) UNIQUE NOT NULL,
+	password LONGTEXT NOT NULL COMMENT 'Hashed string',
+	remember_token VARCHAR(100) NULL,
 	user_created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-/* Roles tables will be added using Entrust Laravel migrations */
-/* Jobs tables will be added using Laravel migrations */
+CREATE TABLE IF NOT EXISTS role_user(
+	user_id INT UNSIGNED NOT NULL,
+	role_id INT UNSIGNED NOT NULL,
+	PRIMARY KEY (user_id, role_id),
+	FOREIGN KEY(role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY(user_id) REFERENCES users(id_user) ON DELETE CASCADE ON UPDATE CASCADE,
+);
+
+CREATE TABLE IF NOT EXISTS jobs(
+	id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	queue VARCHAR(255) NOT NULL,
+	payload LONGTEXT NOT NULL,
+	attempts TINYINT UNSIGNED NOT NULL,
+	reserved_at INT(10) UNSIGNED NULL,
+	available_at INT(10) UNSIGNED NULL,
+	created_at INT(10) UNSIGNED NOT NULL
+);
+
 /* Necessary tables will be added during developing */
-
-
-
-
-
-
